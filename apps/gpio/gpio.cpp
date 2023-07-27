@@ -4,26 +4,35 @@
 
 #include "fmt/format.h"
 
+
+void print_state(int &pre_state, int &pin_num, std::string flag) {
+    int current_state = GPIO::input(pin_num);
+    if (pre_state != current_state) {
+        fmt::print("{} state change to: {}\n", flag, current_state);
+        pre_state = current_state;
+    }
+}
+
+
 int main() {
 
     GPIO::setmode(GPIO::BOARD);
     GPIO::NumberingModes mode = GPIO::getmode();
 
-    int pin_num = 16;
-    GPIO::setup(pin_num, GPIO::IN);
+    int lpin_num = 16;
+    int rpin_num = 18;
+    GPIO::setup(lpin_num, GPIO::IN);
+    GPIO::setup(rpin_num, GPIO::IN);
 
-    int pre_value = GPIO::input(pin_num);
+    int lpre_state = GPIO::input(lpin_num);
+    int rpre_state = GPIO::input(lpin_num);
 
     int cnt = 0;
 
-    do {
-        int current_value = GPIO::input(pin_num);
-        if (pre_value != current_value) {
-            fmt::print("state change to: {}\n", current_value);
-            pre_value = current_value;
-            // cnt += 1;
-        }
-    } while (cnt < 10);
+    while (true) {
+        print_state(lpre_state, lpin_num, "left");
+        print_state(rpre_state, rpin_num, "right");
+    }
 
     GPIO::cleanup();
     return 0;

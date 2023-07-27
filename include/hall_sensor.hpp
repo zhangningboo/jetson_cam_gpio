@@ -9,8 +9,6 @@ private:
     int gpio_pin;
     int pin_state;
 
-    std::thread hall_thread;
-
     std::shared_ptr<std::mutex> lock = std::make_shared<std::mutex>();
 
 public:
@@ -18,6 +16,8 @@ public:
 
     ~HallSensor();
 
+    std::thread hall_thread;
+    
     void open_hall();
     
     void get_hall_state(int &state);

@@ -42,6 +42,8 @@ private:
 
 };
 
-void process_frame(Camera &cam, HallSensor &hall_sensor, bool save_frame, bool show_frame, std::string& dst_dir);
+// void process_frame(Camera &cam, HallSensor &hall_sensor, bool save_frame, bool show_frame, std::string& dst_dir);
+
+void process_frame(Camera &lcam, Camera &rcam, HallSensor &lhall, HallSensor &rhall, std::string &dst_dir);
 
 #endif //JETSON_CAM_GPIO_CAMERA_H

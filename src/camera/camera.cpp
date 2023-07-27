@@ -157,13 +157,82 @@ void process_frame(Camera &cam, HallSensor &hall_sensor, bool save_frame, bool s
                 
                 if (save_frame && door_open) {
                     std::string video_folder = dst_dir + "/" + video_name;
-                    std::cout << "door open-------" << video_folder << std::endl;
+                    std::cout << "door open:" << video_folder << ",frame number: " << cnt << std::endl;
                     std::filesystem::create_directories(video_folder);
                     std::string time_str = "_" + std::to_string(frameResult.system_timestamp) +  "_" + std::to_string(cnt) + ".jpg";
                     std::string file = video_folder + "/" + video_name + time_str;
                     cv::imwrite(file, frameResult.frame);
                 }
                 pre = t1;
+                cnt += 1;
+            }
+        }
+    }
+}
+
+
+void process_frame(Camera &lcam, Camera &rcam, HallSensor &lhall, HallSensor &rhall, std::string &dst_dir) {
+    std::vector<FrameResult> lframe_results{};
+    std::vector<FrameResult> rframe_results{};
+    double lpre = 0;
+    double rpre = 0;
+    
+    int cnt = 0;
+    std::string window_name = "cam";
+    
+    // cv::namedWindow(window_name);
+    // cv::moveWindow(window_name, 10, 20);
+
+    std::string video_name = fresh_video_name();
+
+    FrameResult lframeResult{};
+    FrameResult rframeResult{};
+
+    int lhall_state = 0;
+    int rhall_state = 0;
+
+    bool door_open = false;
+
+    while (true) {
+        lhall.get_hall_state(lhall_state);
+        rhall.get_hall_state(rhall_state);
+        
+        door_open = lhall_state || rhall_state;  // 闭合值是0，只要有一个开，就是1
+        if (!door_open) {
+            video_name = fresh_video_name();
+            cnt = 0;
+        }
+        lcam.get_frame(lframeResult);
+        rcam.get_frame(rframeResult);
+
+        double lt = lframeResult.timestamp;
+        double rt = rframeResult.timestamp;
+
+        if (lt != lpre && rt != rpre) {
+        // if (lt != lpre) {
+            if (lt > 0) {
+                // cv::Mat image{};
+                // cv::Mat arr[] = {
+                //         lframeResult.frame, rframeResult.frame
+                // };
+                // cv::hconcat(arr, 2, image);
+                // cv::imshow(window_name, lframeResult.frame);
+                // int key = cv::waitKey(1);
+                // if (key == char('q')) {
+                //     break;
+                // }
+                if (door_open) {
+                    std::string video_folder = dst_dir + "/" + video_name;
+                    // std::cout << "door open:" << video_folder << ",frame number: " << cnt << std::endl;
+                    std::filesystem::create_directories(video_folder);
+                    std::string lfname = "_l_" + std::to_string(lframeResult.system_timestamp) + "_" + std::to_string(cnt) + ".jpg";
+                    std::string rfname = "_r_" + std::to_string(rframeResult.system_timestamp) + "_" + std::to_string(cnt) + ".jpg";
+                    std::string lfile = video_folder + "/" + video_name + lfname;
+                    std::string rfile = video_folder + "/" + video_name + rfname;
+                    cv::imwrite(lfile, lframeResult.frame);
+                    cv::imwrite(rfile, rframeResult.frame);
+                }
+                lpre = lt;
                 cnt += 1;
             }
         }
